@@ -1,42 +1,31 @@
-name: Terraform Deployment
- 
+name: Terraform Destroy
+
 on:
-  push:
-    branches:
-      - main  # or 'master', depending on your default branch
- 
+  workflow_dispatch:  # Allows manual trigger from GitHub UI
+
 permissions:
   contents: read
- 
+  id-token: write
+
 jobs:
-  terraform-test:
-    name: Terraform Init & Apply
+  destroy:
     runs-on: ubuntu-latest
- 
+
     steps:
-      - name: 📦 Checkout repository
+      - name: 📦 Checkout code
         uses: actions/checkout@v3
- 
+
       - name: 🧰 Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.5.0  # or your required version
- 
+          terraform_version: 1.5.0
+
       - name: 🔐 Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1  # change to your desired region
- 
-      - name: 📄 Terraform Init
-        run: terraform init
-        
- 
-      - name: 🧪 Terraform Validate
-        run: terraform validate
-        
- 
-      - name: 🚀 Terraform Apply
-        run: terraform apply -auto-approve
-        
+          aws-region: us-east-1
+
+      - name: ⚠️ Terraform Destroy
+        run: terraform destroy -auto-approve
