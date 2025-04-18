@@ -1,11 +1,20 @@
 name: Terraform Apply & Destroy
 
 on:
-  workflow_dispatch:  # Allows manual trigger with options for 'apply' or 'destroy'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Terraform action to perform (apply or destroy)'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - apply
+          - destroy
 
 permissions:
   contents: read
-  id-token: write  # Required if you use OIDC authentication
+  id-token: write
 
 jobs:
   terraform:
@@ -25,21 +34,18 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1  # Your desired region
+          aws-region: us-east-1
 
       - name: 📄 Terraform Init
-        run: terraform init  # Reinitialize Terraform
+        run: terraform init
 
       - name: 🧪 Terraform Validate
-        run: terraform validate  # Ensure that your configuration is valid
+        run: terraform validate
 
-      # Apply resources if the user chooses the "apply" option
       - name: 🚀 Terraform Apply
         if: ${{ github.event.inputs.action == 'apply' }}
         run: terraform apply -auto-approve
 
-      # Destroy resources if the user chooses the "destroy" option
       - name: ⚠️ Terraform Destroy
         if: ${{ github.event.inputs.action == 'destroy' }}
         run: terraform destroy -auto-approve
-
