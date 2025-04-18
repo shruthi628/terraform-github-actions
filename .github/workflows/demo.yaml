@@ -27,5 +27,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: 📄 Terraform Init
+        run: terraform init  # Ensure the lock file is in sync
+
+      - name: 🧪 Terraform Validate
+        run: terraform validate  # Validate to ensure the configuration is correct
+
       - name: ⚠️ Terraform Destroy
-        run: terraform destroy -auto-approve
+        run: terraform destroy -auto-approve  # Destroy the resources
+
