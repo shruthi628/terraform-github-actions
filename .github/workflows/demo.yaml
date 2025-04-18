@@ -1,14 +1,14 @@
-name: Terraform Destroy
+name: Terraform Apply & Destroy
 
 on:
-  workflow_dispatch:  # Allows manual trigger from GitHub UI
+  workflow_dispatch:  # Allows manual trigger with options for 'apply' or 'destroy'
 
 permissions:
   contents: read
-  id-token: write
+  id-token: write  # Required if you use OIDC authentication
 
 jobs:
-  destroy:
+  terraform:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,14 +25,21 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: us-east-1  # Your desired region
 
       - name: 📄 Terraform Init
-        run: terraform init  # Ensure the lock file is in sync
+        run: terraform init  # Reinitialize Terraform
 
       - name: 🧪 Terraform Validate
-        run: terraform validate  # Validate to ensure the configuration is correct
+        run: terraform validate  # Ensure that your configuration is valid
 
+      # Apply resources if the user chooses the "apply" option
+      - name: 🚀 Terraform Apply
+        if: ${{ github.event.inputs.action == 'apply' }}
+        run: terraform apply -auto-approve
+
+      # Destroy resources if the user chooses the "destroy" option
       - name: ⚠️ Terraform Destroy
-        run: terraform destroy -auto-approve  # Destroy the resources
+        if: ${{ github.event.inputs.action == 'destroy' }}
+        run: terraform destroy -auto-approve
 
